@@ -27,13 +27,14 @@ route:
 receivers:
   - name: 'email-notifications'
     email_configs:
-      - to: 'your-email@example.com'         # এখানে তোমার ইমেইল দিবে
-        from: 'alertmanager@example.com'    # এই ইমেইল দিয়েই যাবে
-        smarthost: 'smtp.gmail.com:587'      # Gmail SMTP
-        auth_username: 'your-gmail-username@gmail.com'
-        auth_identity: 'your-gmail-username@gmail.com'
-        auth_password: 'your-app-password'   # Gmail App Password
+      - to: 'abrahimcse@gmail.com, moyeencse@gmail.com, gokam@gmail.com'
+        from: 'abrahim.ctech@gmail.com'
+        smarthost: 'smtp.gmail.com:587'
+        auth_username: 'abrahim.ctech@gmail.com'
+        auth_identity: 'abrahim.ctech@gmail.com'
+        auth_password: 'your app pass'
         require_tls: true
+
 ```
 Run Alertmanager
 
