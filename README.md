@@ -1,5 +1,16 @@
 # Step-by-step Prometheus Alertmanager Setup Guide 
 
+## Prerequisites List
+1. Node Exporter installed on all target servers
+2. Prometheus & Grafana installed on main monitoring server
+3. Gmail App Password generated
+  - Gmail 2FA enabled
+  - App password Alertmanager config
+4. Open Firewall Ports
+  - 9090 (Prometheus)
+  - 9093 (Alertmanager)
+  - 9100 (Node Exporter)
+  - Grafana port (default 3000)
 
 ## Step 1: Alertmanager Download and Install
 
@@ -46,51 +57,57 @@ cd /opt/alertmanager
 ## Step 5: Alert Rules create (alert.rules.yml)
 
 ```bash
+cd /ctech/prometheus
 vim alert.rules.yml
 ```
 past configuration
 
 ```bash
 groups:
-- name: system_alerts
-  rules:
-  - alert: HighCPUUsage
-    expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
-    for: 5m
-    labels:
-      severity: warning
-    annotations:
-      summary: "High CPU usage on {{ $labels.instance }}"
-      description: "CPU usage is above 80% for more than 5 minutes."
+  - name: instance-alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}({{ $labels.instance }})"
+          description: "CPU usage is above 80% for more than 2 minutes on {{ $labels.name }}({{ $labels.instance }})"
 
-  - alert: HighMemoryUsage
-    expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
-    for: 5m
-    labels:
-      severity: warning
-    annotations:
-      summary: "High Memory usage on {{ $labels.instance }}"
-      description: "Memory usage is above 80% for more than 5 minutes."
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 80% for more than 2 minutes on {{ $labels.name }}({{ $labels.instance }})"
 
-  - alert: HighDiskUsage
-    expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 80
-    for: 5m
-    labels:
-      severity: warning
-    annotations:
-      summary: "High Disk usage on {{ $labels.instance }}"
-      description: "Disk usage is above 80% for more than 5 minutes."
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 80
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is above 80% for more than 2 minutes on {{ $labels.name }}({{ $labels.instance }})"
 
 ```
 
 ## Step 6: Prometheus configuration (prometheus.yml file)
 
 ```bash
+cd /ctech/prometheus
+vim prometheus.yml
+```
+
+```bash
 global:
   scrape_interval: 10s
 
 rule_files:
-  - "/etc/prometheus/alert.rules.yml"
+  - "alert.rules.yml"
 
 alerting:
   alertmanagers:
@@ -105,24 +122,19 @@ scrape_configs:
 
   - job_name: 'node_exporter'
     static_configs:
-      - targets:
-          - '10.10.8.159:9100'
-          - '10.10.8.211:9100'
-          - '10.10.8.176:9100'
-          - '10.10.8.97:9100'
-          - '10.10.8.48:9100'
-          - '10.10.8.172:9100'
-          - '10.10.8.114:9100'
-          - '10.10.8.233:9100'
-          - '10.10.8.224:9100'
-          - '10.10.8.238:9100'
-          - '10.10.0.179:9100'
-          - '10.10.8.120:9100'
-          - '10.10.0.250:9100'
+      - targets: ['10.10.8.159:9100']
+        labels:
+          name: 'stg-k8s-master'
+      - targets: ['10.10.8.211:9100']
+        labels:
+          name: 'stg-k8s-worker-1'
+      - targets: ['10.10.8.176:9100']
+        labels:
+          name: 'stg-kafka'
           # Others Server ip 
 ```
 
-Prometheus Alertmanager Restart
+**Prometheus Alertmanager Restart**
 
 ```bash
 cd /ctech/prometheus/
