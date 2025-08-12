@@ -125,7 +125,9 @@ scrape_configs:
 Prometheus Alertmanager Restart
 
 ```bash
-sudo systemctl restart prometheus
+cd /ctech/prometheus/
+docker compose down
+docker compose up -d
 ```
 
 ## Step 7: Systemd create for alert message
