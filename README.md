@@ -4,13 +4,15 @@
 1. Node Exporter installed on all target servers
 2. Prometheus & Grafana installed on main monitoring server
 3. Gmail App Password generated
-  - Gmail 2FA enabled
-  - App password Alertmanager config
+    - Gmail 2FA enabled
+    - App password Alertmanager config
 4. Open Firewall Ports
-  - 9090 (Prometheus)
-  - 9093 (Alertmanager)
-  - 9100 (Node Exporter)
-  - Grafana port (default 3000)
+    - 9090 (Prometheus)
+    - 9093 (Alertmanager)
+    - 9100 (Node Exporter)
+    - Grafana port (default 3000)
+
+![](https://github.com/abrahimcse/prometheus-alertmanager-setup-guide/blob/main/alert.jpeg)
 
 ## Step 1: Alertmanager Download and Install
 
