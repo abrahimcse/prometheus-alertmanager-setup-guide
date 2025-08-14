@@ -28,33 +28,12 @@ mv alertmanager-0.27.0.linux-amd64 alertmanager
 vim /opt/alertmanager/alertmanager.yml
 ```
 
-Past this code
-
-```bash
-global:
-  resolve_timeout: 5m
-
-route:
-  receiver: 'email-notifications'
-
-receivers:
-  - name: 'email-notifications'
-    email_configs:
-      - to: 'abrahimcse@gmail.com, moyeencse@gmail.com, gokam@gmail.com'
-        from: 'abrahim.ctech@gmail.com'
-        smarthost: 'smtp.gmail.com:587'
-        auth_username: 'abrahim.ctech@gmail.com'
-        auth_identity: 'abrahim.ctech@gmail.com'
-        auth_password: 'your app pass'
-        require_tls: true
-
-```
 Run Alertmanager
 
 ```bash
 cd /opt/alertmanager
 ./alertmanager --config.file=alertmanager.yml &
-````
+```
 
 ## Step 5: Alert Rules create (alert.rules.yml)
 
@@ -62,78 +41,12 @@ cd /opt/alertmanager
 cd /ctech/prometheus
 vim alert.rules.yml
 ```
-past configuration
-
-```bash
-groups:
-  - name: instance-alerts
-    rules:
-      - alert: HighCPUUsage
-        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
-        for: 2m
-        labels:
-          severity: critical
-        annotations:
-          summary: "High CPU usage on {{ $labels.instance }}({{ $labels.instance }})"
-          description: "CPU usage is above 80% for more than 2 minutes on {{ $labels.name }}({{ $labels.instance }})"
-
-      - alert: HighMemoryUsage
-        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
-        for: 2m
-        labels:
-          severity: critical
-        annotations:
-          summary: "High memory usage on {{ $labels.instance }}"
-          description: "Memory usage is above 80% for more than 2 minutes on {{ $labels.name }}({{ $labels.instance }})"
-
-      - alert: HighDiskUsage
-        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 80
-        for: 2m
-        labels:
-          severity: critical
-        annotations:
-          summary: "High disk usage on {{ $labels.instance }}"
-          description: "Disk usage is above 80% for more than 2 minutes on {{ $labels.name }}({{ $labels.instance }})"
-
-```
 
 ## Step 6: Prometheus configuration (prometheus.yml file)
 
 ```bash
 cd /ctech/prometheus
 vim prometheus.yml
-```
-
-```bash
-global:
-  scrape_interval: 10s
-
-rule_files:
-  - "alert.rules.yml"
-
-alerting:
-  alertmanagers:
-    - static_configs:
-        - targets:
-          - 'localhost:9093'
-
-scrape_configs:
-  - job_name: 'prometheus'
-    static_configs:
-      - targets: ['localhost:9090']
-
-  - job_name: 'node_exporter'
-    static_configs:
-      - targets: ['10.10.8.159:9100']
-        labels:
-          name: 'stg-k8s-master'
-      - targets: ['10.10.8.211:9100']
-        labels:
-          name: 'stg-k8s-worker-1'
-      - targets: ['10.10.8.176:9100']
-        labels:
-          name: 'stg-kafka'
-          # Others Server ip 
 ```
 
 **Prometheus Alertmanager Restart**

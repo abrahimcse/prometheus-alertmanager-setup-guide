@@ -1,0 +1,16 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'email-notifications'
+
+receivers:
+  - name: 'email-notifications'
+    email_configs:
+      - to: 'abrahimcse@gmail.com, moyeencse@gmail.com, gokam@gmail.com'
+        from: 'abrahim.ctech@gmail.com'
+        smarthost: 'smtp.gmail.com:587'
+        auth_username: 'abrahim.ctech@gmail.com'
+        auth_identity: 'abrahim.ctech@gmail.com'
+        auth_password: 'your app pass'
+        require_tls: true
